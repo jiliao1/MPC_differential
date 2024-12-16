@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 3.0.2)
+project(mpc_ctrl)
+set(CMAKE_CXX_STANDARD 20)
+add_compile_options(-fconcepts)  # 启用 concepts 支持
+set(CMAKE_BUILD_TYPE "Release")
+## Compile as C++11, supported in ROS Kinetic and newer
+# add_compile_options(-std=c++11)
+
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
+find_package(catkin REQUIRED COMPONENTS
+  nav_msgs
+  roscpp
+  rospy
+  std_msgs
+  geometry_msgs
+  tf
+  tf2
+  tf2_ros
+)
+find_package(Eigen3 REQUIRED)
+find_package(OsqpEigen REQUIRED)
+
+
+catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES mpc_ctrl
+#  CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs
+#  DEPENDS system_lib
+)
+include_directories(
+  include 
+  ${catkin_INCLUDE_DIRS}
+  ${Eigen3_INCLUDE_DIRS}
+)
+add_executable(mpc_node
+  src/mpc_node.cc
+)
+add_dependencies(mpc_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(mpc_node
+  ${catkin_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+  OsqpEigen::OsqpEigen
+)
+
+catkin_install_python(PROGRAMS
+  src/trajectory_publisher.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
