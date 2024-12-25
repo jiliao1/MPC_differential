@@ -171,7 +171,7 @@ int main(int argc, char **argv)
 	R.diagonal() << 10, 1;
 	x0 << 0, 0, 0;  //初始状态
 
-	//指定大小的矩阵，分配空间但未初始化
+	//指定大小的矩阵，分配空间但未初始化 
 	Eigen::VectorXd out;  
 	out.resize(2);
 	out << 0, 0;  //输出状态初始化为0
@@ -184,7 +184,7 @@ int main(int argc, char **argv)
 			MPC_problem<STATE_NUM, CTRL_NUM, MPC_WINDOW> MPC_Solver(Q, R, xMax, xMin, uMax, uMin);
 			MPC_Solver.set_x_xref(x0, out, xref);
 			out = MPC_Solver.Solver();
-			geometry_msgs::Twist vel_msg;
+			geometry_msgs::Twist vel_msg;  //定义速度消息
 			vel_msg.linear.x = out(0);  //线速度
 			vel_msg.angular.z = out(1); //角速度
 			cmd_vel_pub.publish(vel_msg);
