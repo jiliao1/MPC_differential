@@ -27,7 +27,9 @@ public:
     Eigen::VectorXd Solver();
 
 private:
+    //instantiate the solver
     OsqpEigen::Solver solver;
+    //diagnoalMatrix为对角矩阵
     Eigen::DiagonalMatrix<double, STATE_NUM> Q;
     Eigen::DiagonalMatrix<double, CTRL_NUM> R;
     Eigen::Matrix<double, STATE_NUM, STATE_NUM> a;
@@ -38,17 +40,22 @@ private:
     Eigen::Matrix<double, STATE_NUM, 1> xMin;
     Eigen::Matrix<double, CTRL_NUM, 1> uMax;
     Eigen::Matrix<double, CTRL_NUM, 1> uMin;
-
+    
+    //allocate QP problem materices and vectors
     Eigen::Matrix<double, STATE_NUM, 1> x0;
     Eigen::Matrix<double, CTRL_NUM, 1> out0;
     std::vector<Eigen::Matrix<double, STATE_NUM, 1>> xRef;
     Eigen::SparseMatrix<double> hessian;
     Eigen::VectorXd gradient;
+    //SparseMatrix为稀疏矩阵
     Eigen::SparseMatrix<double> linearMatrix;
     Eigen::VectorXd lowerBound;
     Eigen::VectorXd upperBound;
-
+    
+    //set MPC problem quantities
     void setDynamicsMatrices();
+    //cast the MPC problem as QP problem 
+    //将MPC问题转换为QP问题
     void castMPCToQPHessian();
     void castMPCToQPGradient();
     void castMPCToQPConstraintMatrix();
@@ -198,9 +205,10 @@ template <unsigned short STATE_NUM, unsigned short CTRL_NUM, unsigned short MPC_
 void MPC_problem<STATE_NUM, CTRL_NUM, MPC_WINDOW>::setDynamicsMatrices()
 {
     // x0 [x,y,th]
+    //设置动态转移矩阵   x0的第一、二个元素为x,y,第三个元素为转向角
     double ts = 0.02;
-    a << 1, 0, - sin(x0[2]) * ts,
-        0, 1, cos(x0[2]) * ts,
+    a << 1, 0, - sin(x0[2]) * ts*out0,
+        0, 1, cos(x0[2]) * ts * out0,
         0, 0, 1;
     b << cos(x0[2]) * ts, 0,
         sin(x0[2]) * ts, 0,
@@ -230,6 +238,7 @@ template <unsigned short STATE_NUM, unsigned short CTRL_NUM, unsigned short MPC_
 void MPC_problem<STATE_NUM, CTRL_NUM, MPC_WINDOW>::castMPCToQPConstraintMatrix()
 {
     linearMatrix.resize(
+        //Eigen::Index的作用是提供一种统一的方式表示索引
         static_cast<Eigen::Index>(
             STATE_NUM * (MPC_WINDOW + 1) +
             STATE_NUM * (MPC_WINDOW + 1) +
